@@ -164,6 +164,17 @@ export const ProfilePage = () => {
                     {user?.role === 'admin' ? 'Yönetici' : 'Kullanıcı'}
                   </p>
                 </div>
+                {user?.role === 'admin' && (
+                  <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <Link
+                      to={routes.admin}
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
+                    >
+                      <span>⚙️</span>
+                      <span>Admin Paneline Git</span>
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
           )}
