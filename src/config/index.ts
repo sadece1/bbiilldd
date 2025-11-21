@@ -1,5 +1,5 @@
 export const config = {
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:8000/api'),
+  apiBaseUrl: '/api',
   appName: import.meta.env.VITE_APP_NAME || 'CampScape',
   appDescription: import.meta.env.VITE_APP_DESCRIPTION || 'Doğada unutulmaz kamp deneyimleri için kamp alanları ve kiralık kamp malzemeleri',
   enableDarkMode: true,
