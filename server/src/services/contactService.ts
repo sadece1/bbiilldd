@@ -41,8 +41,8 @@ export const getContactMessages = async (query: any) => {
   const total = countResult[0].total;
 
   const [messages] = await pool.execute<Array<any>>(
-    `SELECT * FROM contact_messages ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
-    [...values, limit, offset]
+    `SELECT * FROM contact_messages ${whereClause} ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+    values
   );
 
   return {

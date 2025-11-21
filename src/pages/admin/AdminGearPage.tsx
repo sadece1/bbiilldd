@@ -391,7 +391,7 @@ export const AdminGearPage = () => {
           </div>
 
           {/* İstatistik Kartları */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -400,9 +400,9 @@ export const AdminGearPage = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-blue-100 text-sm font-medium">Toplam Ürün</p>
-                  <p className="text-3xl font-bold mt-1">{stats.total}</p>
+                  <p className="text-xl sm:text-2xl lg:text-3xl font-bold mt-1">{stats.total}</p>
                 </div>
-                <div className="text-4xl opacity-80">📦</div>
+                <div className="text-2xl sm:text-3xl lg:text-4xl opacity-80">📦</div>
               </div>
             </motion.div>
 
@@ -432,7 +432,7 @@ export const AdminGearPage = () => {
                   <p className="text-purple-100 text-sm font-medium">Sipariş Edilebilir</p>
                   <p className="text-3xl font-bold mt-1">{stats.orderable}</p>
                 </div>
-                <div className="text-4xl opacity-80">📦</div>
+                <div className="text-2xl sm:text-3xl lg:text-4xl opacity-80">📦</div>
               </div>
             </motion.div>
 
@@ -460,7 +460,7 @@ export const AdminGearPage = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-amber-100 text-sm font-medium">Ortalama Fiyat</p>
-                  <p className="text-2xl font-bold mt-1">₺{stats.averagePrice}</p>
+                  <p className="text-lg sm:text-xl lg:text-2xl font-bold mt-1">₺{stats.averagePrice}</p>
                 </div>
                 <div className="text-4xl opacity-80">💰</div>
               </div>
@@ -468,8 +468,8 @@ export const AdminGearPage = () => {
           </div>
 
           {/* Filtreler ve Kontroller */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-3 sm:p-4 lg:p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
               {/* Arama */}
               <div className="lg:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -682,10 +682,11 @@ export const AdminGearPage = () => {
                                   className="border-t border-gray-200 dark:border-gray-700 overflow-hidden"
                                 >
                           <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <div className="overflow-x-auto">
+                              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                               <thead className="bg-gray-50 dark:bg-gray-700">
                                 <tr>
-                                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                          <th className="px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     <input
                                       type="checkbox"
                                               checked={items.every(item => selectedItems.has(item.id))}
@@ -704,13 +705,13 @@ export const AdminGearPage = () => {
                                       className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                                     />
                                   </th>
-                                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                          <th className="px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                             Ürün
                                   </th>
-                                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                          <th className="px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Fiyat
                                   </th>
-                                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                          <th className="px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Durum
                                   </th>
                                           <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
@@ -724,7 +725,7 @@ export const AdminGearPage = () => {
                                     key={item.id}
                                             className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                                   >
-                                            <td className="px-6 py-4">
+                                            <td className="px-3 sm:px-4 lg:px-6 py-2 sm:py-4">
                                       <input
                                         type="checkbox"
                                         checked={selectedItems.has(item.id)}
@@ -786,6 +787,7 @@ export const AdminGearPage = () => {
                                 ))}
                               </tbody>
                             </table>
+                            </div>
                                   </div>
                                 </motion.div>
                               )}
