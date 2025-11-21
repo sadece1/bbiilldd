@@ -118,7 +118,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
       </aside>
 
       {/* Main Content */}
-      <div className={`flex-1 transition-all duration-300 lg:ml-64`}>
+      <div className="flex-1 transition-all duration-300 ml-0 lg:ml-64">
         {/* Header */}
         <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-30">
           <div className="flex items-center justify-between px-4 sm:px-6 py-4">

@@ -269,11 +269,11 @@ export const AddGearPage = () => {
       <SEO title="Yeni Ürün Ekle" description="Yeni ürün ekleyin" />
       <AdminLayout>
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-8">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6 lg:mb-8">
             Yeni Ürün Ekle
           </h1>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 space-y-4 sm:space-y-6">
             <Input
               label="Ürün Adı"
               {...register('name', { required: 'Ürün adı gereklidir' })}
@@ -612,7 +612,7 @@ export const AddGearPage = () => {
                 Teknik Bilgi
               </label>
               {specifications.map((spec, index) => (
-                <div key={index} className="flex gap-2 mb-2">
+                <div key={index} className="flex flex-col sm:flex-row gap-2 mb-2">
                   <Input
                     type="text"
                     value={spec.key}
@@ -718,8 +718,8 @@ export const AddGearPage = () => {
               </p>
             </div>
 
-            <div className="flex gap-4 pt-4">
-              <Button type="submit" variant="primary" isLoading={isSubmitting || uploadingImages} size="lg">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
+              <Button type="submit" variant="primary" isLoading={isSubmitting || uploadingImages} size="lg" className="w-full sm:w-auto">
                 {uploadingImages ? 'Resimler Yükleniyor...' : 'Ürünü Kaydet'}
               </Button>
               <Button
@@ -727,6 +727,7 @@ export const AddGearPage = () => {
                 variant="outline"
                 size="lg"
                 onClick={() => navigate(routes.adminGear)}
+                className="w-full sm:w-auto"
               >
                 İptal
               </Button>

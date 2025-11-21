@@ -72,23 +72,47 @@ export const useGearStore = create<GearState>((set, get) => ({
   addGear: async (gearData) => {
     set({ isLoading: true, error: null });
     try {
-      // Send as JSON (backend will handle FormData if needed)
-      const jsonData = {
-        name: gearData.name,
-        description: gearData.description || '',
-        category_id: gearData.categoryId || gearData.category,
-        price_per_day: gearData.pricePerDay,
-        deposit: gearData.deposit,
-        status: gearData.status || (gearData.available ? 'for-sale' : 'sold'),
-        available: gearData.available ?? true,
-        images: gearData.images || [],
-        brand: gearData.brand,
-        color: gearData.color,
-        specifications: gearData.specifications,
-        recommended_products: gearData.recommendedProducts,
-      };
+      // Create FormData for service compatibility
+      const formData = new FormData();
+      formData.append('name', gearData.name);
+      formData.append('description', gearData.description || '');
+      formData.append('category', String(gearData.category));
+      // Backend expects category_id (UUID format)
+      if (gearData.categoryId) {
+        formData.append('category_id', gearData.categoryId);
+      }
+      formData.append('price_per_day', String(gearData.pricePerDay));
+      if (gearData.deposit !== undefined) {
+        formData.append('deposit', String(gearData.deposit));
+      }
+      formData.append('available', String(gearData.available ?? true));
+      // Backend expects status field
+      formData.append('status', gearData.status || 'for-sale');
+      
+      // Add images as URLs (service will handle them)
+      if (gearData.images && gearData.images.length > 0) {
+        gearData.images.forEach((url, index) => {
+          if (url && url.trim() !== '') {
+            formData.append(`image_${index}`, url);
+          }
+        });
+      }
 
-      await gearService.createGear(jsonData as any);
+      // Add optional fields
+      if (gearData.brand) {
+        formData.append('brand', gearData.brand);
+      }
+      if (gearData.color) {
+        formData.append('color', gearData.color);
+      }
+      if (gearData.rating !== undefined) {
+        formData.append('rating', String(gearData.rating));
+      }
+      if (gearData.recommendedProducts && gearData.recommendedProducts.length > 0) {
+        formData.append('recommendedProducts', JSON.stringify(gearData.recommendedProducts));
+      }
+
+      await gearService.createGear(formData);
       // Refresh gear list
       await get().fetchGear(get().filters, get().page);
       set({ isLoading: false });
