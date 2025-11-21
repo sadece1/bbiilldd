@@ -157,7 +157,7 @@ app.use('/api/auth/register', authLimiter);
 app.use('/api/upload', uploadLimiter);
 
 // Enhanced health check endpoint
-app.get('/health', async (req, res) => {
+const healthCheck = async (req: express.Request, res: express.Response) => {
   try {
     const { testConnection } = await import('./config/database');
     await testConnection();
@@ -180,7 +180,10 @@ app.get('/health', async (req, res) => {
       timestamp: new Date().toISOString(),
     });
   }
-});
+};
+
+app.get('/health', healthCheck);
+app.get('/api/health', healthCheck);
 
 // API routes
 app.use('/api/auth', authRoutes);
