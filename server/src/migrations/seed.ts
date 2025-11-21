@@ -12,18 +12,32 @@ const seedData = async () => {
     // Clear existing data (optional - be careful in production!)
     logger.info('Clearing existing data...');
     await pool.execute('SET FOREIGN_KEY_CHECKS = 0');
-    await pool.execute('TRUNCATE TABLE reservation_gear');
-    await pool.execute('TRUNCATE TABLE reservations');
-    await pool.execute('TRUNCATE TABLE reviews');
-    await pool.execute('TRUNCATE TABLE favorites');
-    await pool.execute('TRUNCATE TABLE blog_posts');
-    await pool.execute('TRUNCATE TABLE gear');
-    await pool.execute('TRUNCATE TABLE campsites');
-    await pool.execute('TRUNCATE TABLE categories');
-    await pool.execute('TRUNCATE TABLE newsletter_subscriptions');
-    await pool.execute('TRUNCATE TABLE appointments');
-    await pool.execute('TRUNCATE TABLE contact_messages');
-    await pool.execute('TRUNCATE TABLE users');
+    
+    // Helper function to safely truncate tables
+    const truncateTable = async (tableName: string) => {
+      try {
+        await pool.execute(`TRUNCATE TABLE ${tableName}`);
+      } catch (error: any) {
+        if (error.code === 'ER_NO_SUCH_TABLE') {
+          logger.info(`Table ${tableName} does not exist, skipping...`);
+        } else {
+          throw error;
+        }
+      }
+    };
+    
+    await truncateTable('reservation_gear');
+    await truncateTable('reservations');
+    await truncateTable('reviews');
+    await truncateTable('favorites');
+    await truncateTable('blog_posts');
+    await truncateTable('gear');
+    await truncateTable('campsites');
+    await truncateTable('categories');
+    await truncateTable('newsletter_subscriptions');
+    await truncateTable('appointments');
+    await truncateTable('contact_messages');
+    await truncateTable('users');
     await pool.execute('SET FOREIGN_KEY_CHECKS = 1');
 
     // Create Admin User
