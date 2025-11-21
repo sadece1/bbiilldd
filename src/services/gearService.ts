@@ -2132,39 +2132,32 @@ export const gearService = {
 
   async getGearById(id: string): Promise<Gear> {
     try {
-      const response = await api.get<Gear>(`/gear/${id}`);
-      return response.data;
+      const response = await api.get<{ success: boolean; data: Gear } | Gear>(`/gear/${id}`);
+      // Handle both response formats
+      const gear = (response.data as any).success ? (response.data as any).data : response.data;
+      return gear;
     } catch (error) {
-      // Fallback to mock data in development
-      if (import.meta.env.DEV) {
-        console.warn('API call failed, using mock gear data:', error);
-        // Reload from localStorage to get latest data
-        mockGear = loadGearFromStorage();
-        const mockItem = mockGear.find(g => g.id === id);
-        if (mockItem) {
-          return mockItem;
-        }
+      // Fallback to mock data (both dev and prod)
+      console.warn('API call failed, using mock gear data:', error);
+      // Reload from localStorage to get latest data
+      mockGear = loadGearFromStorage();
+      const mockItem = mockGear.find(g => g.id === id);
+      if (mockItem) {
+        return mockItem;
       }
-      throw error;
+      // If not found in mock data, throw error
+      throw new Error(`Gear with id ${id} not found`);
     }
   },
 
-  async createGear(data: FormData | any): Promise<Gear> {
+  async createGear(data: FormData): Promise<Gear> {
     try {
-      // If FormData, send as multipart, otherwise send as JSON
-      const isFormData = data instanceof FormData;
-      const response = await api.post<{ success: boolean; data: Gear }>('/gear', data, {
-        headers: isFormData
-          ? { 'Content-Type': 'multipart/form-data' }
-          : { 'Content-Type': 'application/json' },
+      const response = await api.post<Gear>('/gear', data, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
-      
-      // Handle backend response format
-      if (response.data.success && (response.data as any).data) {
-        return (response.data as any).data;
-      }
-      
-      return response.data as any;
+      return response.data;
     } catch (error) {
       // Fallback to mock response in development
       if (import.meta.env.DEV) {
