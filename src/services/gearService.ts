@@ -2013,16 +2013,30 @@ export const gearService = {
         ),
       });
 
-      const response = await api.get<PaginatedResponse<Gear>>(
+      const response = await api.get<{ success: boolean; data: Gear[]; pagination: any } | PaginatedResponse<Gear>>(
         `/gear?${params.toString()}`
       );
-      return response.data;
+      
+      // Backend returns { success: true, data: gear[], pagination: {...} }
+      if ((response.data as any).success && (response.data as any).data) {
+        return {
+          data: (response.data as any).data,
+          total: (response.data as any).pagination?.total || (response.data as any).data.length,
+          page: (response.data as any).pagination?.page || page,
+          limit: (response.data as any).pagination?.limit || limit,
+          totalPages: (response.data as any).pagination?.totalPages || Math.ceil(((response.data as any).pagination?.total || (response.data as any).data.length) / limit),
+        };
+      }
+      
+      // Direct paginated response
+      return response.data as PaginatedResponse<Gear>;
     } catch (error) {
-      // Always fallback to mock data (both dev and prod)
-      console.warn('API call failed, using mock gear data:', error);
-      // Reload from localStorage to get latest data
-      mockGear = loadGearFromStorage();
-      console.log('Mock gear loaded from storage, total items:', mockGear.length);
+      // Only use mock data in development mode, never in production
+      if (import.meta.env.DEV) {
+        console.warn('API call failed, using mock gear data:', error);
+        // Reload from localStorage to get latest data
+        mockGear = loadGearFromStorage();
+        console.log('Mock gear loaded from storage, total items:', mockGear.length);
       let filtered = [...mockGear];
 
       // Apply filters if any
@@ -2142,8 +2156,8 @@ export const gearService = {
       // Direct gear object
       return response.data as Gear;
     } catch (error: any) {
-      // Fallback to mock data if 404 or other error
-      if (error.response?.status === 404 || import.meta.env.DEV) {
+      // Only use mock data in development mode, never in production
+      if (import.meta.env.DEV && error.response?.status === 404) {
         console.warn('API call failed, using mock gear data:', error);
         // Reload from localStorage to get latest data
         mockGear = loadGearFromStorage();
