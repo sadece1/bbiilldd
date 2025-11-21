@@ -103,35 +103,73 @@ export const CategoryPage = () => {
         console.log('Matching category IDs:', Array.from(matchingCategoryIds));
         console.log('Total gear items:', gear.length);
         
+        // Build a map of backend UUID category IDs to frontend slug-based IDs
+        const categoryIdMap = new Map<string, string>();
+        allCategories.forEach(cat => {
+          // Map both UUID and slug-based IDs
+          categoryIdMap.set(cat.id, cat.id);
+          if (cat.id.startsWith('cat-')) {
+            // If it's already slug-based, use it directly
+            categoryIdMap.set(cat.id, cat.id);
+          }
+        });
+        
+        // Also check if backend returns category_id in snake_case
         const filtered = gear.filter((item) => {
+          // Get categoryId from item (could be categoryId or category_id from backend)
+          const itemCategoryId = (item as any).categoryId || (item as any).category_id;
+          
           // Check categoryId first (most reliable) - exact match with category or its parents/children
-          if (item.categoryId && matchingCategoryIds.has(item.categoryId)) {
-            console.log('Matched by categoryId:', item.name, 'categoryId:', item.categoryId);
+          if (itemCategoryId && matchingCategoryIds.has(itemCategoryId)) {
+            console.log('Matched by categoryId:', item.name, 'categoryId:', itemCategoryId);
             return true;
           }
           
+          // Check if backend UUID matches any frontend category UUID
+          // Backend returns UUID, frontend categories might have UUID too
+          if (itemCategoryId) {
+            const matchingCategory = allCategories.find(cat => cat.id === itemCategoryId);
+            if (matchingCategory && matchingCategoryIds.has(matchingCategory.id)) {
+              console.log('Matched by backend UUID to frontend category:', item.name, 'UUID:', itemCategoryId);
+              return true;
+            }
+          }
+          
           // Check category slug match - most reliable for dynamic IDs
-          if (item.category === categorySlug || item.category === category.slug) {
+          const itemCategory = item.category || (item as any).category_slug;
+          if (itemCategory === categorySlug || itemCategory === category.slug) {
             console.log('Matched by category slug:', item.name);
             return true;
           }
           
           // Check if categoryId matches slug pattern (cat-{slug})
-          if (item.categoryId && item.categoryId === `cat-${categorySlug}`) {
+          if (itemCategoryId && itemCategoryId === `cat-${categorySlug}`) {
             console.log('Matched by categoryId pattern:', item.name);
             return true;
           }
           
           // Check if categoryId ends with slug (for dynamic IDs)
-          if (item.categoryId && category.slug && item.categoryId.endsWith(category.slug)) {
+          if (itemCategoryId && category.slug && itemCategoryId.endsWith(category.slug)) {
             console.log('Matched by categoryId suffix:', item.name);
             return true;
           }
           
           // Check if category is string and includes slug
-          if (typeof item.category === 'string' && item.category.includes(categorySlug)) {
+          if (itemCategory && typeof itemCategory === 'string' && itemCategory.includes(categorySlug)) {
             console.log('Matched by category string:', item.name);
             return true;
+          }
+          
+          // Debug: log item details for troubleshooting
+          if (itemCategoryId) {
+            console.log('Debug - gear item not matched:', {
+              itemName: item.name,
+              itemCategoryId: itemCategoryId,
+              itemCategory: itemCategory,
+              categoryId: category.id,
+              categorySlug: category.slug,
+              matchingIds: Array.from(matchingCategoryIds)
+            });
           }
           
           return false;
@@ -423,4 +461,5 @@ export const CategoryPage = () => {
     </>
   );
 };
+
 
