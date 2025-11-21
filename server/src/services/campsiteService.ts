@@ -79,8 +79,8 @@ export const getCampsites = async (query: any) => {
 
   // Get campsites
   const [campsites] = await pool.execute<Array<any>>(
-    `SELECT * FROM campsites ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
-    [...values, limit, offset]
+    `SELECT * FROM campsites ${whereClause} ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+    values
   );
 
   // Parse JSON fields

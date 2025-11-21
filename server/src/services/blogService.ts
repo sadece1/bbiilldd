@@ -36,9 +36,10 @@ export const getBlogPosts = async (query: any) => {
   );
   const total = countResult[0].total;
 
+  // LIMIT and OFFSET must be integers, not parameters in MySQL
   const [posts] = await pool.execute<Array<any>>(
-    `SELECT * FROM blog_posts ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
-    [...values, limit, offset]
+    `SELECT * FROM blog_posts ${whereClause} ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+    values
   );
 
   const parsedPosts = posts.map((p: any) => ({

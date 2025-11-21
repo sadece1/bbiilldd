@@ -102,8 +102,8 @@ export const getGear = async (query: any) => {
 
   // Get gear
   const [gear] = await pool.execute<Array<any>>(
-    `SELECT * FROM gear ${whereClause} ORDER BY ${orderBy} LIMIT ? OFFSET ?`,
-    [...values, limit, offset]
+    `SELECT * FROM gear ${whereClause} ORDER BY ${orderBy} LIMIT ${limit} OFFSET ${offset}`,
+    values
   );
 
   // Parse JSON fields
