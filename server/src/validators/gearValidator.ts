@@ -64,7 +64,7 @@ export const gearFiltersSchema = Joi.object({
     .valid('price-asc', 'price-desc', 'name-asc', 'name-desc', 'newest', 'oldest')
     .optional(),
   page: Joi.number().integer().min(1).optional(),
-  limit: Joi.number().integer().min(1).max(100).optional(),
+  limit: Joi.number().integer().min(1).max(10000).optional(),
 });
 
 

@@ -46,6 +46,7 @@ export const getBlogPosts = async (query: any) => {
     ...p,
     tags: parseJson<string[]>(p.tags) || [],
     recommended_posts: parseJson<string[]>(p.recommended_posts) || [],
+    views: p.views ? parseInt(p.views) : 0,
   }));
 
   return {

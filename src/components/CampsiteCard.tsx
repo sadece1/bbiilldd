@@ -30,7 +30,7 @@ export const CampsiteCard = ({ campsite }: CampsiteCardProps) => {
           {campsite.rating && (
             <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded flex items-center gap-1">
               <span>⭐</span>
-              <span>{campsite.rating.toFixed(1)}</span>
+              <span>{typeof campsite.rating === 'number' ? campsite.rating.toFixed(1) : parseFloat(String(campsite.rating)).toFixed(1)}</span>
               {campsite.reviewCount && <span>({campsite.reviewCount})</span>}
             </div>
           )}

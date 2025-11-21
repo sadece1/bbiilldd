@@ -445,7 +445,7 @@ export const GearDetailsPage = () => {
                       </div>
                       <div className="text-right">
                         <div className="text-2xl font-semibold text-gray-900 dark:text-white">
-                          {gear.rating.toFixed(1)}
+                          {typeof gear.rating === 'number' ? gear.rating.toFixed(1) : parseFloat(String(gear.rating)).toFixed(1)}
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">
                           / 5.0
@@ -592,7 +592,7 @@ export const GearDetailsPage = () => {
                           <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wide">Değerlendirme</div>
                           <div className="flex items-center gap-2">
                             <span className="text-xl font-semibold text-gray-900 dark:text-white">
-                              {gear.rating.toFixed(1)}
+                              {typeof gear.rating === 'number' ? gear.rating.toFixed(1) : parseFloat(String(gear.rating)).toFixed(1)}
                             </span>
                             <div className="flex items-center gap-0.5">
                               {[...Array(5)].map((_, i) => {

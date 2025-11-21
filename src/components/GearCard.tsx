@@ -51,7 +51,7 @@ export const GearCard = ({ gear }: GearCardProps) => {
           }
         })}
         <span className="text-xs text-gray-600 dark:text-gray-400 ml-1">
-          {rating.toFixed(1)}
+          {typeof rating === 'number' ? rating.toFixed(1) : parseFloat(String(rating)).toFixed(1)}
         </span>
       </div>
     );

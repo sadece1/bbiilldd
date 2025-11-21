@@ -139,7 +139,7 @@ export const CampsiteDetailsPage = () => {
                   </div>
                   {currentCampsite.rating && (
                     <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
-                      <span>⭐ {currentCampsite.rating.toFixed(1)}</span>
+                      <span>⭐ {typeof currentCampsite.rating === 'number' ? currentCampsite.rating.toFixed(1) : parseFloat(String(currentCampsite.rating)).toFixed(1)}</span>
                       {currentCampsite.reviewCount && (
                         <span>({currentCampsite.reviewCount} değerlendirme)</span>
                       )}

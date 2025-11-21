@@ -83,12 +83,14 @@ export const getCampsites = async (query: any) => {
     values
   );
 
-  // Parse JSON fields
+  // Parse JSON fields and convert numeric fields
   const parsedCampsites = campsites.map((c: any) => ({
     ...c,
     images: parseJson<string[]>(c.images) || [],
     amenities: parseJson<string[]>(c.amenities) || [],
     rules: parseJson<string[]>(c.rules) || [],
+    rating: c.rating ? parseFloat(c.rating) : null,
+    price_per_night: c.price_per_night ? parseFloat(c.price_per_night) : 0,
   }));
 
   return {

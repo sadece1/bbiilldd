@@ -106,12 +106,15 @@ export const getGear = async (query: any) => {
     values
   );
 
-  // Parse JSON fields
+  // Parse JSON fields and convert numeric fields
   const parsedGear = gear.map((g: any) => ({
     ...g,
     images: parseJson<string[]>(g.images) || [],
     specifications: parseJson<Record<string, any>>(g.specifications) || {},
     recommended_products: parseJson<string[]>(g.recommended_products) || [],
+    rating: g.rating ? parseFloat(g.rating) : null,
+    price_per_day: g.price_per_day ? parseFloat(g.price_per_day) : 0,
+    deposit: g.deposit ? parseFloat(g.deposit) : null,
   }));
 
   return {
