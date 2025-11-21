@@ -40,7 +40,7 @@ export const authenticateApiKey = async (
     req.user = {
       id: validation.apiKey.userId,
       email: '', // API keys don't have email
-      role: 'api',
+      role: 'admin', // API keys have admin privileges
     };
   }
 

@@ -4,7 +4,7 @@ dotenv.config();
 
 export const jwtConfig = {
   secret: process.env.JWT_SECRET || 'CampscapeJWTSecret2025!',
-  expiresIn: process.env.JWT_EXPIRES_IN || '7d',
+  expiresIn: (process.env.JWT_EXPIRES_IN || '7d') as string | number,
   issuer: 'campscape-api',
   audience: 'campscape-client',
 };

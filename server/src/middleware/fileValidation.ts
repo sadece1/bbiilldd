@@ -46,7 +46,9 @@ export const validateUploadedFile = async (
       if (Array.isArray(file) || !file.filename) {
         continue;
       }
-      const filePath = path.join(process.cwd(), uploadConfig.uploadDir, file.filename);
+      // Type assertion after guard
+      const multerFile = file as Express.Multer.File;
+      const filePath = path.join(process.cwd(), uploadConfig.uploadDir, multerFile.filename);
 
       if (!fs.existsSync(filePath)) {
         logger.warn(`Uploaded file not found: ${filePath}`);
@@ -63,7 +65,7 @@ export const validateUploadedFile = async (
       fs.readSync(fd, buffer, 0, 12, 0);
       fs.closeSync(fd);
 
-      const ext = path.extname(file.filename).toLowerCase();
+      const ext = path.extname(multerFile.filename).toLowerCase();
       let isValid = false;
 
       switch (ext) {
@@ -84,13 +86,13 @@ export const validateUploadedFile = async (
 
       if (!isValid) {
         fs.unlinkSync(filePath);
-        logger.warn(`Invalid file signature detected: ${file.filename}`);
+        logger.warn(`Invalid file signature detected: ${multerFile.filename}`);
         logSecurityEvent(SecurityEventType.SUSPICIOUS_ACTIVITY, {
           userId: (req as any).user?.id,
           ip: (req as any).ip,
           details: {
             activity: 'Invalid file signature',
-            filename: file.filename,
+            filename: multerFile.filename,
           },
           severity: 'high',
         });
@@ -113,13 +115,13 @@ export const validateUploadedFile = async (
         
         if (polyglotCheck.isPolyglot) {
           fs.unlinkSync(filePath);
-          logger.warn(`Polyglot file detected: ${file.filename}`, polyglotCheck.detectedTypes);
+          logger.warn(`Polyglot file detected: ${multerFile.filename}`, polyglotCheck.detectedTypes);
           logSecurityEvent(SecurityEventType.SUSPICIOUS_ACTIVITY, {
             userId: (req as any).user?.id,
             ip: (req as any).ip,
             details: {
               activity: 'Polyglot file upload attempt',
-              filename: file.filename,
+              filename: multerFile.filename,
               detectedTypes: polyglotCheck.detectedTypes,
             },
             severity: 'critical',
@@ -148,7 +150,7 @@ export const validateUploadedFile = async (
         
         if (!imageValidation.valid) {
           fs.unlinkSync(filePath);
-          logger.warn(`Image validation failed: ${file.filename}`, imageValidation.error);
+          logger.warn(`Image validation failed: ${multerFile.filename}`, imageValidation.error);
           res.status(400).json({
             success: false,
             error: imageValidation.error || 'Image validation failed',
@@ -187,18 +189,18 @@ export const validateUploadedFile = async (
             fs.renameSync(sanitizedPath, filePath);
             
             // Update filename if extension changed
-            if (!file.filename.endsWith('.jpg')) {
-              const newFilename = file.filename.replace(/\.[^.]+$/, '.jpg');
+            if (!multerFile.filename.endsWith('.jpg')) {
+              const newFilename = multerFile.filename.replace(/\.[^.]+$/, '.jpg');
               const newPath = path.join(process.cwd(), uploadConfig.uploadDir, newFilename);
               fs.renameSync(filePath, newPath);
-              file.filename = newFilename;
-              file.path = newPath;
+              multerFile.filename = newFilename;
+              multerFile.path = newPath;
             }
 
-            logger.info(`Image sanitized: ${file.filename}`);
+            logger.info(`Image sanitized: ${multerFile.filename}`);
           }
         } catch (sanitizeError) {
-          logger.warn(`Image sanitization failed: ${file.filename}`, sanitizeError);
+          logger.warn(`Image sanitization failed: ${multerFile.filename}`, sanitizeError);
           // Continue with original file
         }
       }
@@ -212,13 +214,13 @@ export const validateUploadedFile = async (
         fileHash = `hash-${Date.now()}-${Math.random()}`; // Fallback hash
       }
       // Store hash for later use
-      (file as any).hash = fileHash;
+      (multerFile as any).hash = fileHash;
 
       // 6. Check for duplicate files (skip if database error)
       try {
         const duplicateFile = await getUploadedFileByHash(fileHash);
         if (duplicateFile && !duplicateFile.isQuarantined) {
-          logger.info(`Duplicate file detected: ${file.filename} (matches ${duplicateFile.filename})`);
+          logger.info(`Duplicate file detected: ${multerFile.filename} (matches ${duplicateFile.filename})`);
           // Optionally delete the duplicate file to save space
           // For now, we'll keep it but could add duplicate detection logic
         }
@@ -237,11 +239,11 @@ export const validateUploadedFile = async (
             // Move to quarantine
             const fileRecord = await createUploadRecord(
               userId || 'system',
-              file.filename,
-              file.originalname,
+              multerFile.filename,
+              multerFile.originalname,
               fileHash,
-              file.size,
-              file.mimetype,
+              multerFile.size,
+              multerFile.mimetype,
               filePath
             );
             
@@ -256,7 +258,7 @@ export const validateUploadedFile = async (
               ip: (req as any).ip,
               details: {
                 activity: 'Virus detected in uploaded file',
-                filename: file.filename,
+                filename: multerFile.filename,
                 threatName: virusScanResult.threatName,
               },
               severity: 'critical',
@@ -288,11 +290,11 @@ export const validateUploadedFile = async (
         try {
           await createUploadRecord(
             userId,
-            file.filename,
-            file.originalname,
+            multerFile.filename,
+            multerFile.originalname,
             fileHash,
-            file.size,
-            file.mimetype,
+            multerFile.size,
+            multerFile.mimetype,
             filePath
           );
         } catch (error) {

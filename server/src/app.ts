@@ -100,16 +100,13 @@ app.use(compression());
 // Body parsing middleware with size limits
 app.use(express.json({ 
   limit: process.env.MAX_JSON_SIZE || '1mb', // Reduced default for security
-  verify: (req, res: Response, buf) => {
+  verify: (req, res, buf, encoding) => {
     // Additional JSON validation can be added here
     try {
       JSON.parse(buf.toString());
     } catch (e) {
-      res.status(400).json({
-        success: false,
-        error: 'Invalid JSON format',
-      });
-      throw new Error('Invalid JSON');
+      // Cannot send response in verify, just throw error
+      throw new Error('Invalid JSON format');
     }
   },
 }));
