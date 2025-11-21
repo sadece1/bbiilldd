@@ -105,15 +105,95 @@ export const CategoryPage = () => {
         
         // Fetch backend categories to map UUID category_ids to frontend categories
         // Backend returns UUID category_ids, but we need to match them with frontend slug-based categories
-        let backendCategories: Category[] = [];
-        try {
-          const backendCategoriesResponse = await fetch('/api/categories').then(r => r.json());
-          if (backendCategoriesResponse.success && backendCategoriesResponse.data) {
-            backendCategories = backendCategoriesResponse.data;
+        const filterGearWithBackendCategories = async () => {
+          let backendCategories: Category[] = [];
+          try {
+            const response = await fetch('/api/categories');
+            const backendCategoriesResponse = await response.json();
+            if (backendCategoriesResponse.success && backendCategoriesResponse.data) {
+              backendCategories = backendCategoriesResponse.data;
+            }
+          } catch (error) {
+            console.warn('Failed to fetch backend categories, using frontend categories only:', error);
           }
-        } catch (error) {
-          console.warn('Failed to fetch backend categories, using frontend categories only:', error);
-        }
+          
+          // Build a map of backend UUID category IDs to frontend slug-based category IDs
+          const backendToFrontendCategoryMap = new Map<string, string>();
+          backendCategories.forEach(backendCat => {
+            // Find matching frontend category by slug
+            const frontendCat = allCategories.find(fc => fc.slug === backendCat.slug);
+            if (frontendCat) {
+              backendToFrontendCategoryMap.set(backendCat.id, frontendCat.id);
+            }
+          });
+          
+          // Filter gear with backend category mapping
+          const filtered = gear.filter((item) => {
+            // Get categoryId from item (could be categoryId or category_id from backend)
+            const itemCategoryId = (item as any).categoryId || (item as any).category_id;
+            
+            // Check if backend UUID maps to a frontend category ID that matches
+            if (itemCategoryId) {
+              const mappedFrontendId = backendToFrontendCategoryMap.get(itemCategoryId);
+              if (mappedFrontendId && matchingCategoryIds.has(mappedFrontendId)) {
+                console.log('Matched by backend UUID to frontend category:', item.name, 'UUID:', itemCategoryId, '-> Frontend ID:', mappedFrontendId);
+                return true;
+              }
+            }
+            
+            // Check categoryId first (most reliable) - exact match with category or its parents/children
+            if (itemCategoryId && matchingCategoryIds.has(itemCategoryId)) {
+              console.log('Matched by categoryId:', item.name, 'categoryId:', itemCategoryId);
+              return true;
+            }
+            
+            // Check if backend UUID matches any frontend category UUID
+            // Backend returns UUID, frontend categories might have UUID too
+            if (itemCategoryId) {
+              const matchingCategory = allCategories.find(cat => cat.id === itemCategoryId);
+              if (matchingCategory && matchingCategoryIds.has(matchingCategory.id)) {
+                console.log('Matched by backend UUID to frontend category:', item.name, 'UUID:', itemCategoryId);
+                return true;
+              }
+            }
+            
+            // Check category slug match - most reliable for dynamic IDs
+            const itemCategory = item.category || (item as any).category_slug;
+            if (itemCategory === categorySlug || itemCategory === category.slug) {
+              console.log('Matched by category slug:', item.name);
+              return true;
+            }
+            
+            // Check if categoryId matches slug pattern (cat-{slug})
+            if (itemCategoryId && itemCategoryId === `cat-${categorySlug}`) {
+              console.log('Matched by categoryId pattern:', item.name);
+              return true;
+            }
+            
+            // Check if categoryId ends with slug (for dynamic IDs)
+            if (itemCategoryId && category.slug && itemCategoryId.endsWith(category.slug)) {
+              console.log('Matched by categoryId suffix:', item.name);
+              return true;
+            }
+            
+            // Check if category is string and includes slug
+            if (itemCategory && typeof itemCategory === 'string' && itemCategory.includes(categorySlug)) {
+              console.log('Matched by category string:', item.name);
+              return true;
+            }
+            
+            return false;
+          });
+          
+          console.log('Filtered gear count:', filtered.length);
+          console.log('Filtered items:', filtered.map(g => g.name));
+          
+          setCategoryGear(filtered);
+          setIsLoading(false);
+        };
+        
+        // Call async function
+        filterGearWithBackendCategories();
         
         // Build a map of backend UUID category IDs to frontend slug-based category IDs
         const backendToFrontendCategoryMap = new Map<string, string>();
