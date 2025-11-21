@@ -74,8 +74,8 @@ const corsOptions = {
       ? process.env.ALLOWED_ORIGINS.split(',')
       : [process.env.FRONTEND_URL || 'http://localhost:5173'];
     
-    // Allow requests with no origin (mobile apps, Postman, etc.) in development
-    if (!origin && process.env.NODE_ENV === 'development') {
+    // Allow requests with no origin (mobile apps, Postman, curl, Nginx proxy, etc.)
+    if (!origin) {
       return callback(null, true);
     }
     
