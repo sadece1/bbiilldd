@@ -32,12 +32,38 @@ const mockUsers = [
   },
 ];
 
+// Helper to transform backend user format to frontend format
+const transformUser = (backendUser: any): User => {
+  return {
+    id: backendUser.id,
+    email: backendUser.email,
+    name: backendUser.name,
+    role: backendUser.role,
+    avatar: backendUser.avatar,
+    createdAt: backendUser.created_at || backendUser.createdAt || new Date().toISOString(),
+    updatedAt: backendUser.updated_at || backendUser.updatedAt || new Date().toISOString(),
+  };
+};
+
 export const authService = {
   async login(credentials: LoginForm): Promise<AuthResponse> {
     // Check if API call fails, use mock data
     try {
-      const response = await api.post<AuthResponse>('/auth/login', credentials);
-      return response.data;
+      const response = await api.post<{ success: boolean; data: { user: any; token: string } }>('/auth/login', credentials);
+      
+      // Backend returns { success: true, data: { user, token } }
+      if (response.data.success && response.data.data) {
+        return {
+          user: transformUser(response.data.data.user),
+          token: response.data.data.token,
+        };
+      }
+      
+      // Fallback if format is different
+      return {
+        user: transformUser(response.data.data?.user || response.data),
+        token: response.data.data?.token || (response.data as any).token,
+      };
     } catch (error) {
       // Mock login for development
       const user = mockUsers.find(
@@ -58,18 +84,41 @@ export const authService = {
   },
 
   async register(data: RegisterForm): Promise<AuthResponse> {
-    const response = await api.post<AuthResponse>('/auth/register', data);
-    return response.data;
+    const response = await api.post<{ success: boolean; data: { user: any; token: string } }>('/auth/register', data);
+    
+    if (response.data.success && response.data.data) {
+      return {
+        user: transformUser(response.data.data.user),
+        token: response.data.data.token,
+      };
+    }
+    
+    return {
+      user: transformUser(response.data.data?.user || response.data),
+      token: response.data.data?.token || (response.data as any).token,
+    };
   },
 
   async getCurrentUser(): Promise<User> {
-    const response = await api.get<User>('/auth/me');
-    return response.data;
+    const response = await api.get<{ success: boolean; data: any } | User>('/auth/me');
+    
+    // Check if it's wrapped in success/data format
+    if ((response.data as any).success && (response.data as any).data) {
+      return transformUser((response.data as any).data);
+    }
+    
+    // Direct user object
+    return transformUser(response.data as any);
   },
 
   async updateProfile(data: Partial<User>): Promise<User> {
-    const response = await api.put<User>('/auth/profile', data);
-    return response.data;
+    const response = await api.put<{ success: boolean; data: any } | User>('/auth/profile', data);
+    
+    if ((response.data as any).success && (response.data as any).data) {
+      return transformUser((response.data as any).data);
+    }
+    
+    return transformUser(response.data as any);
   },
 
   async changePassword(currentPassword: string, newPassword: string): Promise<void> {
