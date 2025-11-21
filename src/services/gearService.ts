@@ -2141,6 +2141,9 @@ export const gearService = {
         limit,
         totalPages: Math.ceil(filtered.length / limit),
       };
+      }
+      // In production, throw error instead of using mock data
+      throw error;
     }
   },
 
