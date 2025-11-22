@@ -11,7 +11,7 @@ import { GearCard } from '@/components/GearCard';
 import { formatPrice } from '@/utils/validation';
 import { categoryService } from '@/services/categoryService';
 import { colorService } from '@/services/colorService';
-import { gearService, mockGear as gearServiceMockGear } from '@/services/gearService';
+import { gearService } from '@/services/gearService';
 import { Gear } from '@/types';
 
 // Mock gear data for details page - expanded with all 10 items
@@ -101,7 +101,8 @@ export const GearDetailsPage = () => {
     
     // Try to find the same gear in gearService mock data to get specifications
     try {
-      const enrichedGearItem = gearServiceMockGear.find((g: Gear) => g.id === itemId);
+      // Removed mockGear usage - now using backend API only
+      // const enrichedGearItem = gearServiceMockGear.find((g: Gear) => g.id === itemId);
       if (enrichedGearItem && enrichedGearItem.specifications) {
         return {
           ...gearItem,
@@ -117,7 +118,6 @@ export const GearDetailsPage = () => {
 
   // Try to get gear from multiple sources, prioritizing gearService (which has specifications)
   const baseGear = enrichedGear || currentGear || 
-                   (id ? mockGearData[id as keyof typeof mockGearData] : null) ||
                    (id ? categoryService.getGearById(id) : null);
   
   // Enrich gear with specifications if missing

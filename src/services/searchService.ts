@@ -1,7 +1,7 @@
 import { Gear } from '@/types';
 import { BlogPost } from '@/types';
 import { mockBlogPosts } from './blogService';
-import { mockGear } from './gearService';
+// Removed mockGear import - now using backend API only
 import { categoryService } from './categoryService';
 
 export interface SearchResult {
@@ -42,7 +42,7 @@ export const searchService = {
       }))
       .slice(0, 10); // Limit to 10 results
 
-    // Search gear
+    // Search gear - using categoryService only (backend API will be used via gearService)
     const allCategoryGear: Gear[] = [];
     try {
       categoryService.getAllCategorySlugs().forEach((slug) => {
@@ -50,10 +50,11 @@ export const searchService = {
         allCategoryGear.push(...categoryData.gear);
       });
     } catch (error) {
-      // Category service might not be available, continue with mockGear only
+      // Category service might not be available
+      console.warn('Category service not available for search:', error);
     }
 
-    const allGear = [...mockGear, ...allCategoryGear];
+    const allGear = [...allCategoryGear];
     const gearResults = allGear
       .filter((item) => {
         return (
