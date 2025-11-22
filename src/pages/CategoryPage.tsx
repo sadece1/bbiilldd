@@ -112,6 +112,7 @@ export const CategoryPage = () => {
             const backendCategoriesResponse = await response.json();
             if (backendCategoriesResponse.success && backendCategoriesResponse.data) {
               backendCategories = backendCategoriesResponse.data;
+              console.log('Backend categories fetched:', backendCategories.length);
             }
           } catch (error) {
             console.warn('Failed to fetch backend categories, using frontend categories only:', error);
@@ -124,7 +125,17 @@ export const CategoryPage = () => {
             const frontendCat = allCategories.find(fc => fc.slug === backendCat.slug);
             if (frontendCat) {
               backendToFrontendCategoryMap.set(backendCat.id, frontendCat.id);
+              console.log('Mapped backend category:', backendCat.id, '->', frontendCat.id, 'slug:', backendCat.slug);
             }
+          });
+          
+          console.log('Backend to frontend category map size:', backendToFrontendCategoryMap.size);
+          console.log('Gear items to filter:', gear.length);
+          
+          // Debug: Log all gear items and their category IDs
+          gear.forEach(item => {
+            const itemCategoryId = (item as any).categoryId || (item as any).category_id;
+            console.log('Gear item:', item.name, 'categoryId:', itemCategoryId, 'category:', item.category);
           });
           
           // Filter gear with backend category mapping
@@ -136,14 +147,14 @@ export const CategoryPage = () => {
             if (itemCategoryId) {
               const mappedFrontendId = backendToFrontendCategoryMap.get(itemCategoryId);
               if (mappedFrontendId && matchingCategoryIds.has(mappedFrontendId)) {
-                console.log('Matched by backend UUID to frontend category:', item.name, 'UUID:', itemCategoryId, '-> Frontend ID:', mappedFrontendId);
+                console.log('✓ Matched by backend UUID to frontend category:', item.name, 'UUID:', itemCategoryId, '-> Frontend ID:', mappedFrontendId);
                 return true;
               }
             }
             
             // Check categoryId first (most reliable) - exact match with category or its parents/children
             if (itemCategoryId && matchingCategoryIds.has(itemCategoryId)) {
-              console.log('Matched by categoryId:', item.name, 'categoryId:', itemCategoryId);
+              console.log('✓ Matched by categoryId:', item.name, 'categoryId:', itemCategoryId);
               return true;
             }
             
@@ -152,7 +163,7 @@ export const CategoryPage = () => {
             if (itemCategoryId) {
               const matchingCategory = allCategories.find(cat => cat.id === itemCategoryId);
               if (matchingCategory && matchingCategoryIds.has(matchingCategory.id)) {
-                console.log('Matched by backend UUID to frontend category:', item.name, 'UUID:', itemCategoryId);
+                console.log('✓ Matched by backend UUID to frontend category:', item.name, 'UUID:', itemCategoryId);
                 return true;
               }
             }
@@ -160,25 +171,25 @@ export const CategoryPage = () => {
             // Check category slug match - most reliable for dynamic IDs
             const itemCategory = item.category || (item as any).category_slug;
             if (itemCategory === categorySlug || itemCategory === category.slug) {
-              console.log('Matched by category slug:', item.name);
+              console.log('✓ Matched by category slug:', item.name);
               return true;
             }
             
             // Check if categoryId matches slug pattern (cat-{slug})
             if (itemCategoryId && itemCategoryId === `cat-${categorySlug}`) {
-              console.log('Matched by categoryId pattern:', item.name);
+              console.log('✓ Matched by categoryId pattern:', item.name);
               return true;
             }
             
             // Check if categoryId ends with slug (for dynamic IDs)
             if (itemCategoryId && category.slug && itemCategoryId.endsWith(category.slug)) {
-              console.log('Matched by categoryId suffix:', item.name);
+              console.log('✓ Matched by categoryId suffix:', item.name);
               return true;
             }
             
             // Check if category is string and includes slug
             if (itemCategory && typeof itemCategory === 'string' && itemCategory.includes(categorySlug)) {
-              console.log('Matched by category string:', item.name);
+              console.log('✓ Matched by category string:', item.name);
               return true;
             }
             
