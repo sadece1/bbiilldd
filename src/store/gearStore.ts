@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { Gear, GearFilters } from '@/types';
 import { gearService } from '@/services/gearService';
+import { categoryManagementService } from '@/services/categoryManagementService';
 
 interface GearState {
   gear: Gear[];
