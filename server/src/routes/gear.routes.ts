@@ -12,15 +12,14 @@ import {
 import { authenticate } from '../middleware/auth';
 import { validate, validateQuery, createGearSchema, updateGearSchema, gearFiltersSchema } from '../validators';
 import { upload } from '../middleware/upload';
-import { asyncHandler } from '../middleware/errorHandler';
 
 const router = Router();
 
 // Multer middleware for parsing FormData (no file upload, just text fields)
 const parseFormData = upload.none();
 
-// Middleware to transform FormData to validation-friendly format
-const transformFormData = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+// Middleware to transform FormData to expected format for validation
+const transformFormData = (req: Request, res: Response, next: NextFunction) => {
   // Extract image URLs from image_0, image_1, etc.
   const images: string[] = [];
   let imageIndex = 0;
@@ -31,8 +30,6 @@ const transformFormData = asyncHandler(async (req: Request, res: Response, next:
     }
     imageIndex++;
   }
-
-  // If images array is populated, replace req.body.images
   if (images.length > 0) {
     req.body.images = images;
   }
@@ -47,41 +44,36 @@ const transformFormData = asyncHandler(async (req: Request, res: Response, next:
   }
 
   // Parse recommended_products if it's a string (JSON)
-  if (req.body.recommendedProducts && typeof req.body.recommendedProducts === 'string') {
+  const recommendedProducts = req.body.recommendedProducts || req.body.recommended_products;
+  if (recommendedProducts && typeof recommendedProducts === 'string') {
     try {
-      req.body.recommended_products = JSON.parse(req.body.recommendedProducts);
+      req.body.recommended_products = JSON.parse(recommendedProducts);
     } catch (e) {
       req.body.recommended_products = [];
     }
-  } else if (req.body.recommended_products && typeof req.body.recommended_products === 'string') {
-    try {
-      req.body.recommended_products = JSON.parse(req.body.recommended_products);
-    } catch (e) {
-      req.body.recommended_products = [];
-    }
+  } else if (recommendedProducts && Array.isArray(recommendedProducts)) {
+    req.body.recommended_products = recommendedProducts;
   }
 
   // Convert string numbers to numbers
   if (req.body.price_per_day) {
-    if (typeof req.body.price_per_day === 'string') {
-      req.body.price_per_day = parseFloat(req.body.price_per_day);
-    }
+    req.body.price_per_day = typeof req.body.price_per_day === 'string' 
+      ? parseFloat(req.body.price_per_day) 
+      : req.body.price_per_day;
   }
   if (req.body.deposit) {
-    if (typeof req.body.deposit === 'string') {
-      req.body.deposit = parseFloat(req.body.deposit);
-    }
+    req.body.deposit = typeof req.body.deposit === 'string' 
+      ? parseFloat(req.body.deposit) 
+      : req.body.deposit;
   }
 
   // Convert string boolean to boolean
   if (req.body.available !== undefined) {
-    if (typeof req.body.available === 'string') {
-      req.body.available = req.body.available === 'true' || req.body.available === '1';
-    }
+    req.body.available = req.body.available === 'true' || req.body.available === true;
   }
 
   next();
-});
+};
 
 router.get('/', validateQuery(gearFiltersSchema), getAllGear);
 router.get('/search', search);

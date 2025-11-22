@@ -68,8 +68,8 @@ export const create = asyncHandler(async (req: AuthRequest, res: Response) => {
     return;
   }
 
-  // req.body is already transformed by transformFormData middleware and validated by validate middleware
-  // Just use it directly
+  // FormData has already been parsed and transformed by middleware
+  // Validation has already passed, so we can use req.body directly
   const gearData: any = {
     name: req.body.name,
     description: req.body.description,
@@ -77,7 +77,7 @@ export const create = asyncHandler(async (req: AuthRequest, res: Response) => {
     images: req.body.images || [],
     price_per_day: req.body.price_per_day,
     deposit: req.body.deposit,
-    available: req.body.available !== undefined ? req.body.available : true,
+    available: req.body.available ?? true,
     status: req.body.status,
     specifications: req.body.specifications || {},
     brand: req.body.brand,
