@@ -14,6 +14,7 @@ export const AdminCategoriesPage = () => {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
+  const [isSyncing, setIsSyncing] = useState(false);
 
 
   useEffect(() => {
@@ -58,6 +59,44 @@ export const AdminCategoriesPage = () => {
 
   const collapseAll = () => {
     setExpandedCategories(new Set());
+  };
+
+  const handleSyncToBackend = async () => {
+    if (!confirm('Frontend\'deki tüm kategorileri backend\'e senkronize etmek istediğinizden emin misiniz?\n\nBu işlem mevcut olmayan kategorileri backend\'de oluşturacaktır.')) {
+      return;
+    }
+
+    setIsSyncing(true);
+    try {
+      const result = await syncCategoriesToBackend();
+      
+      if (result.success) {
+        alert(
+          `✅ Senkronizasyon tamamlandı!\n\n` +
+          `Oluşturulan: ${result.created}\n` +
+          `Zaten mevcut: ${result.skipped}\n` +
+          `Hatalar: ${result.errors.length}`
+        );
+        
+        if (result.errors.length > 0) {
+          console.error('Sync errors:', result.errors);
+        }
+      } else {
+        alert(
+          `⚠️ Senkronizasyon sırasında hatalar oluştu:\n\n` +
+          `Oluşturulan: ${result.created}\n` +
+          `Zaten mevcut: ${result.skipped}\n` +
+          `Hatalar: ${result.errors.length}\n\n` +
+          `Detaylar için console'u kontrol edin.`
+        );
+        console.error('Sync errors:', result.errors);
+      }
+    } catch (error: any) {
+      console.error('Sync failed:', error);
+      alert(`❌ Senkronizasyon başarısız oldu: ${error.message}`);
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   const handleDelete = async (id: string) => {
