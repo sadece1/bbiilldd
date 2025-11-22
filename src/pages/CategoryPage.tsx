@@ -329,8 +329,8 @@ export const CategoryPage = () => {
           setIsLoading(false);
         };
         
-        // Call async function
-        filterGearWithBackendCategories();
+            // Call async function
+            await filterGearWithBackendCategories();
       } else if (!gearLoading) {
         // If gear is empty and not loading, try fetching again
         console.log('Gear is empty, fetching...');
