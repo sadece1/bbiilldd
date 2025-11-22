@@ -15,7 +15,7 @@ export const createGearSchema = Joi.object({
     'string.guid': 'Category ID must be a valid UUID',
     'any.required': 'Category ID is required',
   }),
-  images: Joi.array().items(Joi.string().uri()).min(0).max(10).optional().default([]),
+  images: Joi.array().items(Joi.string().uri()).min(1).max(10).optional(),
   price_per_day: Joi.number().positive().precision(2).required().messages({
     'number.positive': 'Price must be a positive number',
     'any.required': 'Price per day is required',
@@ -39,7 +39,7 @@ export const updateGearSchema = Joi.object({
   name: Joi.string().min(3).max(200).trim().optional(),
   description: Joi.string().min(20).max(2000).trim().optional(),
   category_id: Joi.string().uuid().optional(),
-  images: Joi.array().items(Joi.string().uri()).min(0).max(10).optional().default([]),
+  images: Joi.array().items(Joi.string().uri()).min(1).max(10).optional(),
   price_per_day: Joi.number().positive().precision(2).optional(),
   deposit: Joi.number().positive().precision(2).optional(),
   status: Joi.string().valid('for-sale', 'sold', 'orderable').optional(),

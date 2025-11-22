@@ -30,16 +30,15 @@ const transformFormData = (req: Request, res: Response, next: NextFunction) => {
     }
     imageIndex++;
   }
-  if (images.length > 0) {
-    req.body.images = images;
-  }
+  // Always set images array (even if empty) - validation will handle it
+  req.body.images = images.length > 0 ? images : undefined;
 
   // Parse specifications if it's a string (JSON)
   if (req.body.specifications && typeof req.body.specifications === 'string') {
     try {
       req.body.specifications = JSON.parse(req.body.specifications);
     } catch (e) {
-      req.body.specifications = {};
+      req.body.specifications = undefined;
     }
   }
 
@@ -49,27 +48,54 @@ const transformFormData = (req: Request, res: Response, next: NextFunction) => {
     try {
       req.body.recommended_products = JSON.parse(recommendedProducts);
     } catch (e) {
-      req.body.recommended_products = [];
+      req.body.recommended_products = undefined;
     }
   } else if (recommendedProducts && Array.isArray(recommendedProducts)) {
     req.body.recommended_products = recommendedProducts;
+  } else if (!recommendedProducts) {
+    req.body.recommended_products = undefined;
   }
 
-  // Convert string numbers to numbers
-  if (req.body.price_per_day) {
-    req.body.price_per_day = typeof req.body.price_per_day === 'string' 
+  // Convert string numbers to numbers (required fields)
+  if (req.body.price_per_day !== undefined && req.body.price_per_day !== null && req.body.price_per_day !== '') {
+    const parsed = typeof req.body.price_per_day === 'string' 
       ? parseFloat(req.body.price_per_day) 
       : req.body.price_per_day;
+    req.body.price_per_day = isNaN(parsed) ? undefined : parsed;
+  } else {
+    req.body.price_per_day = undefined;
   }
-  if (req.body.deposit) {
-    req.body.deposit = typeof req.body.deposit === 'string' 
+
+  if (req.body.deposit !== undefined && req.body.deposit !== null && req.body.deposit !== '') {
+    const parsed = typeof req.body.deposit === 'string' 
       ? parseFloat(req.body.deposit) 
       : req.body.deposit;
+    req.body.deposit = isNaN(parsed) ? undefined : parsed;
+  } else {
+    req.body.deposit = undefined;
   }
 
   // Convert string boolean to boolean
   if (req.body.available !== undefined) {
     req.body.available = req.body.available === 'true' || req.body.available === true;
+  }
+
+  // Ensure category_id is a string (UUID validation will handle format)
+  if (req.body.category_id) {
+    req.body.category_id = String(req.body.category_id).trim();
+  }
+
+  // Ensure name and description are strings
+  if (req.body.name) {
+    req.body.name = String(req.body.name).trim();
+  }
+  if (req.body.description) {
+    req.body.description = String(req.body.description).trim();
+  }
+
+  // Ensure status is a string
+  if (req.body.status) {
+    req.body.status = String(req.body.status).trim();
   }
 
   next();

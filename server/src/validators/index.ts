@@ -7,6 +7,11 @@ import { asyncHandler } from '../middleware/errorHandler';
  */
 export const validate = (schema: Joi.ObjectSchema) => {
   return asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    // Log request body for debugging (only in development)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Validation - Request body:', JSON.stringify(req.body, null, 2));
+    }
+
     const { error, value } = schema.validate(req.body, {
       abortEarly: false,
       stripUnknown: true,
@@ -17,7 +22,12 @@ export const validate = (schema: Joi.ObjectSchema) => {
       const errors = error.details.map((detail) => ({
         field: detail.path.join('.'),
         message: detail.message,
+        type: detail.type,
       }));
+
+      // Log validation errors for debugging
+      console.error('Validation errors:', errors);
+      console.error('Request body:', req.body);
 
       res.status(400).json({
         success: false,
