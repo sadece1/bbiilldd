@@ -237,8 +237,8 @@ export const Navbar = () => {
   useEffect(() => {
     if (debouncedSearch.length >= 2) {
       searchService.search(debouncedSearch).then(results => {
-        setSearchResults(results);
-        setIsSearchOpen(true);
+      setSearchResults(results);
+      setIsSearchOpen(true);
       }).catch(error => {
         console.error('Search failed:', error);
         setSearchResults({ blogs: [], gear: [] });

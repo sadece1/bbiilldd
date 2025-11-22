@@ -37,10 +37,10 @@ export const AdminCategoriesPage = () => {
   const loadCategories = async () => {
     try {
       const allCategories = await categoryManagementService.getAllCategories();
-      setCategories(allCategories);
-      
-      // Trigger navbar update
-      window.dispatchEvent(new Event('categoriesUpdated'));
+    setCategories(allCategories);
+    
+    // Trigger navbar update
+    window.dispatchEvent(new Event('categoriesUpdated'));
     } catch (error) {
       console.error('Failed to load categories:', error);
     }
@@ -459,14 +459,14 @@ export const AdminCategoriesPage = () => {
                 <span>{isSyncing ? '⏳' : '🔄'}</span>
                 <span>{isSyncing ? 'Senkronize Ediliyor...' : 'Backend\'e Senkronize Et'}</span>
               </Button>
-              <Link to={routes.adminAddCategory}>
-                <Button variant="primary" size="lg">
-                  <span className="flex items-center space-x-2">
-                    <span>➕</span>
-                    <span>Yeni Kategori Ekle</span>
-                  </span>
-                </Button>
-              </Link>
+            <Link to={routes.adminAddCategory}>
+              <Button variant="primary" size="lg">
+                <span className="flex items-center space-x-2">
+                  <span>➕</span>
+                  <span>Yeni Kategori Ekle</span>
+                </span>
+              </Button>
+            </Link>
             </div>
           </div>
 

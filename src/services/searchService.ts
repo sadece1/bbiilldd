@@ -34,14 +34,14 @@ export const searchService = {
     try {
       const blogsResponse = await blogService.getBlogs({ search: query }, 1);
       blogResults = blogsResponse.data
-        .map((blog) => ({
-          id: blog.id,
-          title: blog.title,
-          excerpt: blog.excerpt,
+      .map((blog) => ({
+        id: blog.id,
+        title: blog.title,
+        excerpt: blog.excerpt,
           image: blog.image || '',
           category: blog.category || '',
-        }))
-        .slice(0, 10); // Limit to 10 results
+      }))
+      .slice(0, 10); // Limit to 10 results
     } catch (error) {
       console.error('Failed to search blogs:', error);
     }

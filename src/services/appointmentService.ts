@@ -5,9 +5,9 @@ import { Appointment, PaginatedResponse } from '@/types';
 
 export const appointmentService = {
   async getAppointments(page = 1, filters?: { status?: string }): Promise<PaginatedResponse<Appointment>> {
-    const response = await api.get<PaginatedResponse<Appointment>>('/appointments', {
-      params: { page, ...filters },
-    });
+      const response = await api.get<PaginatedResponse<Appointment>>('/appointments', {
+        params: { page, ...filters },
+      });
     
     // Backend returns { success: true, data: [...], pagination: {...} }
     if ((response.data as any).success && (response.data as any).data) {
@@ -46,6 +46,6 @@ export const appointmentService = {
   },
 
   async deleteAppointment(id: string): Promise<void> {
-    await api.delete(`/appointments/${id}`);
+      await api.delete(`/appointments/${id}`);
   },
 };

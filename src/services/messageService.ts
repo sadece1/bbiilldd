@@ -5,9 +5,9 @@ import { Message, PaginatedResponse } from '@/types';
 
 export const messageService = {
   async getMessages(page = 1): Promise<PaginatedResponse<Message>> {
-    const response = await api.get<PaginatedResponse<Message>>('/messages', {
-      params: { page },
-    });
+      const response = await api.get<PaginatedResponse<Message>>('/messages', {
+        params: { page },
+      });
     
     // Backend returns { success: true, data: [...], pagination: {...} }
     if ((response.data as any).success && (response.data as any).data) {
@@ -46,6 +46,6 @@ export const messageService = {
   },
 
   async deleteMessage(id: string): Promise<void> {
-    await api.delete(`/messages/${id}`);
+      await api.delete(`/messages/${id}`);
   },
 };

@@ -5,10 +5,10 @@ import { ContactForm, AppointmentForm } from '@/types';
 
 export const contactService = {
   async sendMessage(data: ContactForm): Promise<void> {
-    await api.post('/contact', data);
+      await api.post('/contact', data);
   },
   
   async bookAppointment(data: AppointmentForm): Promise<void> {
-    await api.post('/appointments', data);
+      await api.post('/appointments', data);
   },
-};
+      };

@@ -49,11 +49,11 @@ export const useBlogStore = create<BlogState>((set, get) => ({
       });
     } catch (error) {
       console.error('Error fetching blogs:', error);
-      set({
-        blogs: [],
-        isLoading: false,
-        error: error instanceof Error ? error.message : 'Bloglar yüklenemedi',
-      });
+        set({
+          blogs: [],
+          isLoading: false,
+          error: error instanceof Error ? error.message : 'Bloglar yüklenemedi',
+        });
     }
   },
 

@@ -5,9 +5,9 @@ import { BlogPost, BlogFilters, PaginatedResponse } from '@/types';
 
 export const blogService = {
   async getBlogs(filters?: BlogFilters, page = 1): Promise<PaginatedResponse<BlogPost>> {
-    const response = await api.get<PaginatedResponse<BlogPost>>('/blogs', {
-      params: { ...filters, page },
-    });
+      const response = await api.get<PaginatedResponse<BlogPost>>('/blogs', {
+        params: { ...filters, page },
+      });
     
     // Backend returns { success: true, data: [...], pagination: {...} }
     if ((response.data as any).success && (response.data as any).data) {
@@ -57,6 +57,6 @@ export const blogService = {
   },
 
   async deleteBlog(id: string): Promise<void> {
-    await api.delete(`/blogs/${id}`);
+      await api.delete(`/blogs/${id}`);
   },
 };

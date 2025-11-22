@@ -16,9 +16,9 @@ export const newsletterService = {
   },
 
   async getSubscriptions(page = 1): Promise<PaginatedResponse<NewsletterSubscription>> {
-    const response = await api.get<PaginatedResponse<NewsletterSubscription>>('/newsletters', {
-      params: { page },
-    });
+      const response = await api.get<PaginatedResponse<NewsletterSubscription>>('/newsletters', {
+        params: { page },
+      });
     
     // Backend returns { success: true, data: [...], pagination: {...} }
     if ((response.data as any).success && (response.data as any).data) {
@@ -35,10 +35,10 @@ export const newsletterService = {
   },
 
   async unsubscribe(id: string): Promise<void> {
-    await api.patch(`/newsletters/${id}/unsubscribe`);
+      await api.patch(`/newsletters/${id}/unsubscribe`);
   },
 
   async deleteSubscription(id: string): Promise<void> {
-    await api.delete(`/newsletters/${id}`);
+      await api.delete(`/newsletters/${id}`);
   },
 };

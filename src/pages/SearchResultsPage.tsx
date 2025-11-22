@@ -49,10 +49,10 @@ export const SearchResultsPage = () => {
     if (query && query.length >= 2) {
       setIsLoading(true);
       searchService.search(query).then(results => {
-        // Cast to BlogPost[] since searchService returns compatible structure
-        setAllBlogs(results.blogs as unknown as BlogPost[]);
-        setAllGear(results.gear);
-        setIsLoading(false);
+      // Cast to BlogPost[] since searchService returns compatible structure
+      setAllBlogs(results.blogs as unknown as BlogPost[]);
+      setAllGear(results.gear);
+      setIsLoading(false);
       }).catch(error => {
         console.error('Search failed:', error);
         setAllBlogs([]);
