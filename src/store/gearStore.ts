@@ -135,19 +135,91 @@ export const useGearStore = create<GearState>((set, get) => ({
                   availableBackendCategories: backendCategories.map((bc: any) => ({ id: bc.id, slug: bc.slug, name: bc.name }))
                 });
                 
-                // Don't use fallback - show error to user
-                const availableCategoryNames = backendCategories.map((bc: any) => bc.name).join(', ');
-                const errorMsg = `⚠️ Kategori Backend'de Bulunamadı!\n\n` +
-                  `Seçilen kategori: "${frontendCategory.name}" (${frontendCategory.slug})\n\n` +
-                  `Backend'de mevcut kategoriler:\n${availableCategoryNames}\n\n` +
-                  `Lütfen:\n` +
-                  `1. Backend'de "${frontendCategory.name}" kategorisini oluşturun, VEYA\n` +
-                  `2. Frontend'de mevcut backend kategorilerinden birini seçin.\n\n` +
-                  `Not: Backend'de kategori oluşturmak için admin panelinden kategori yönetimi bölümünü kullanın.`;
+                // Try to create the category in backend automatically
+                console.log('🔄 Attempting to create category in backend:', frontendCategory.name);
+                try {
+                  const { categoryManagementService } = await import('@/services/categoryManagementService');
+                  
+                  // Find parent category in backend if frontend category has a parent
+                  let backendParentId: string | null = null;
+                  if (frontendCategory.parentId) {
+                    const parentFrontendCategory = categoryManagementService.getCategoryById(frontendCategory.parentId);
+                    if (parentFrontendCategory) {
+                      // Try to find parent in backend
+                      const parentBackendCategory = backendCategories.find((bc: any) => {
+                        const backendSlug = (bc.slug || '').toLowerCase().trim();
+                        const backendName = (bc.name || '').toLowerCase().trim();
+                        const frontendSlug = (parentFrontendCategory.slug || '').toLowerCase().trim();
+                        const frontendName = (parentFrontendCategory.name || '').toLowerCase().trim();
+                        return backendSlug === frontendSlug || backendName === frontendName;
+                      });
+                      if (parentBackendCategory) {
+                        backendParentId = parentBackendCategory.id;
+                      }
+                    }
+                  }
+                  
+                  // Create category in backend
+                  const newBackendCategory = await categoryManagementService.createCategory({
+                    name: frontendCategory.name,
+                    slug: frontendCategory.slug,
+                    description: frontendCategory.description || null,
+                    parentId: backendParentId,
+                    icon: frontendCategory.icon || null,
+                    order: frontendCategory.order || 0,
+                  });
+                  
+                  if (newBackendCategory) {
+                    // Try to get the UUID from backend response
+                    // The createCategory might return a local category, so we need to fetch from backend
+                    const refreshResponse = await fetch('/api/categories');
+                    const refreshData = await refreshResponse.json();
+                    if (refreshData.success && refreshData.data) {
+                      const refreshedBackendCategories = refreshData.data;
+                      const createdCategory = refreshedBackendCategories.find((bc: any) => 
+                        bc.slug === frontendCategory.slug || bc.name === frontendCategory.name
+                      );
+                      if (createdCategory) {
+                        backendCategoryId = createdCategory.id;
+                        console.log('✅ Category created in backend:', {
+                          id: backendCategoryId,
+                          name: createdCategory.name,
+                          slug: createdCategory.slug
+                        });
+                      }
+                    }
+                  }
+                } catch (createError) {
+                  console.error('❌ Failed to create category in backend:', createError);
+                  const availableCategoryNames = backendCategories.map((bc: any) => bc.name).join(', ');
+                  const errorMsg = `⚠️ Kategori Backend'de Bulunamadı ve Oluşturulamadı!\n\n` +
+                    `Seçilen kategori: "${frontendCategory.name}" (${frontendCategory.slug})\n\n` +
+                    `Backend'de mevcut kategoriler:\n${availableCategoryNames}\n\n` +
+                    `Lütfen:\n` +
+                    `1. Backend'de "${frontendCategory.name}" kategorisini manuel olarak oluşturun, VEYA\n` +
+                    `2. Frontend'de mevcut backend kategorilerinden birini seçin.\n\n` +
+                    `Not: Backend'de kategori oluşturmak için admin panelinden kategori yönetimi bölümünü kullanın.`;
+                  
+                  alert(errorMsg);
+                  set({ isLoading: false });
+                  return;
+                }
                 
-                alert(errorMsg);
-                set({ isLoading: false });
-                return;
+                // If still no backendCategoryId after creation attempt, show error
+                if (!backendCategoryId) {
+                  const availableCategoryNames = backendCategories.map((bc: any) => bc.name).join(', ');
+                  const errorMsg = `⚠️ Kategori Backend'de Bulunamadı!\n\n` +
+                    `Seçilen kategori: "${frontendCategory.name}" (${frontendCategory.slug})\n\n` +
+                    `Backend'de mevcut kategoriler:\n${availableCategoryNames}\n\n` +
+                    `Lütfen:\n` +
+                    `1. Backend'de "${frontendCategory.name}" kategorisini oluşturun, VEYA\n` +
+                    `2. Frontend'de mevcut backend kategorilerinden birini seçin.\n\n` +
+                    `Not: Backend'de kategori oluşturmak için admin panelinden kategori yönetimi bölümünü kullanın.`;
+                  
+                  alert(errorMsg);
+                  set({ isLoading: false });
+                  return;
+                }
               }
             } else {
               console.warn('⚠️ Frontend category not found for ID:', gearData.categoryId);
