@@ -613,7 +613,9 @@ export const EditGearPage = () => {
                           alt={`Resim ${index + 1}`}
                           className="w-full h-32 object-cover rounded-lg border border-gray-300 dark:border-gray-600"
                           onError={(e) => {
-                            (e.target as HTMLImageElement).src = '/placeholder-image.jpg';
+                            const target = e.target as HTMLImageElement;
+                            // Use SVG placeholder as fallback
+                            target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%23e5e7eb"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%239ca3af" font-family="sans-serif" font-size="18"%3EResim Yüklenemedi%3C/text%3E%3C/svg%3E';
                           }}
                         />
                         <Button
