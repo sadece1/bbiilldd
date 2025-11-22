@@ -124,25 +124,45 @@ export const useGearStore = create<GearState>((set, get) => ({
               
               if (matchingBackendCategory) {
                 backendCategoryId = matchingBackendCategory.id;
+                console.log('✅ Category matched:', {
+                  frontend: { id: frontendCategory.id, slug: frontendCategory.slug, name: frontendCategory.name },
+                  backend: { id: matchingBackendCategory.id, slug: matchingBackendCategory.slug, name: matchingBackendCategory.name }
+                });
               } else {
+                // Log detailed information for debugging
+                console.warn('⚠️ Category not matched:', {
+                  frontend: { id: frontendCategory.id, slug: frontendCategory.slug, name: frontendCategory.name },
+                  availableBackendCategories: backendCategories.map((bc: any) => ({ id: bc.id, slug: bc.slug, name: bc.name }))
+                });
+                
                 // If no match found, try to use first backend category as fallback
-                console.warn('Category not matched, using first backend category as fallback');
+                console.warn('⚠️ Using first backend category as fallback');
                 if (backendCategories.length > 0) {
                   backendCategoryId = backendCategories[0].id;
+                  console.warn('⚠️ Fallback category:', backendCategories[0]);
                 }
               }
+            } else {
+              console.warn('⚠️ Frontend category not found for ID:', gearData.categoryId);
             }
+          } else {
+            console.warn('⚠️ Backend categories response is invalid:', backendCategoriesResponse);
           }
         } catch (error) {
-          console.warn('Failed to fetch backend categories:', error);
+          console.error('❌ Failed to fetch backend categories:', error);
           alert('⚠️ Kategoriler yüklenemedi. Lütfen sayfayı yenileyip tekrar deneyin.');
           set({ isLoading: false });
           return;
         }
+      } else {
+        console.warn('⚠️ No categoryId provided in gearData:', gearData);
       }
 
       if (!backendCategoryId) {
-        alert('⚠️ Geçerli bir kategori seçin. Kategori backend\'de bulunamadı.');
+        const errorMsg = gearData.categoryId 
+          ? `⚠️ Geçerli bir kategori seçin. Kategori backend'de bulunamadı.\n\nSeçilen kategori: ${categoryManagementService.getCategoryById(gearData.categoryId)?.name || gearData.categoryId}\n\nLütfen farklı bir kategori seçin veya backend'de bu kategoriyi oluşturun.`
+          : '⚠️ Lütfen bir kategori seçin!';
+        alert(errorMsg);
         set({ isLoading: false });
         return;
       }

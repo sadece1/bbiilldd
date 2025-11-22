@@ -126,18 +126,21 @@ export const AddGearPage = () => {
       if (category) {
         setValue('categoryId', category.id);
         setValue('category', category.slug);
+        console.log('✅ Final category selected:', { id: category.id, slug: category.slug, name: category.name });
       }
     } else if (selectedSubCategory) {
       const category = categoryManagementService.getCategoryById(selectedSubCategory);
       if (category) {
         setValue('categoryId', category.id);
         setValue('category', category.slug);
+        console.log('✅ Sub category selected:', { id: category.id, slug: category.slug, name: category.name });
       }
     } else if (selectedParentCategory) {
       const category = categoryManagementService.getCategoryById(selectedParentCategory);
       if (category) {
         setValue('categoryId', category.id);
         setValue('category', category.slug);
+        console.log('✅ Parent category selected:', { id: category.id, slug: category.slug, name: category.name });
       }
     }
   }, [selectedFinalCategory, selectedSubCategory, selectedParentCategory, setValue]);
