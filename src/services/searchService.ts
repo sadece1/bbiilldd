@@ -1,8 +1,7 @@
 import { Gear } from '@/types';
 import { BlogPost } from '@/types';
-import { mockBlogPosts } from './blogService';
-// Removed mockGear import - now using backend API only
-import { categoryService } from './categoryService';
+import { blogService } from './blogService';
+import { gearService } from './gearService';
 
 export interface SearchResult {
   blogs: Array<{
@@ -16,54 +15,45 @@ export interface SearchResult {
 }
 
 export const searchService = {
-  search(query: string): SearchResult {
+  async search(query: string): Promise<SearchResult> {
     const lowerQuery = query.toLowerCase().trim();
 
     if (lowerQuery.length < 2) {
       return { blogs: [], gear: [] };
     }
 
-    // Search blogs
-    const blogResults = mockBlogPosts
-      .filter((blog) => {
-        return (
-          blog.title.toLowerCase().includes(lowerQuery) ||
-          blog.excerpt.toLowerCase().includes(lowerQuery) ||
-          blog.category.toLowerCase().includes(lowerQuery) ||
-          blog.tags?.some((tag) => tag.toLowerCase().includes(lowerQuery))
-        );
-      })
-      .map((blog) => ({
-        id: blog.id,
-        title: blog.title,
-        excerpt: blog.excerpt,
-        image: blog.image,
-        category: blog.category,
-      }))
-      .slice(0, 10); // Limit to 10 results
-
-    // Search gear - using categoryService only (backend API will be used via gearService)
-    const allCategoryGear: Gear[] = [];
+    // Search blogs from backend
+    let blogResults: Array<{
+      id: string;
+      title: string;
+      excerpt: string;
+      image: string;
+      category: string;
+    }> = [];
+    
     try {
-      categoryService.getAllCategorySlugs().forEach((slug) => {
-        const categoryData = categoryService.getCategoryGear(slug);
-        allCategoryGear.push(...categoryData.gear);
-      });
+      const blogsResponse = await blogService.getBlogs({ search: query }, 1);
+      blogResults = blogsResponse.data
+        .map((blog) => ({
+          id: blog.id,
+          title: blog.title,
+          excerpt: blog.excerpt,
+          image: blog.image || '',
+          category: blog.category || '',
+        }))
+        .slice(0, 10); // Limit to 10 results
     } catch (error) {
-      // Category service might not be available
-      console.warn('Category service not available for search:', error);
+      console.error('Failed to search blogs:', error);
     }
 
-    const allGear = [...allCategoryGear];
-    const gearResults = allGear
-      .filter((item) => {
-        return (
-          item.name.toLowerCase().includes(lowerQuery) ||
-          item.description.toLowerCase().includes(lowerQuery) ||
-          item.category.toLowerCase().includes(lowerQuery)
-        );
-      })
-      .slice(0, 10); // Limit to 10 results
+    // Search gear from backend
+    let gearResults: Gear[] = [];
+    try {
+      const gearResponse = await gearService.getGear({ search: query }, 1, 100);
+      gearResults = gearResponse.data.slice(0, 10); // Limit to 10 results
+    } catch (error) {
+      console.error('Failed to search gear:', error);
+    }
 
     return {
       blogs: blogResults,

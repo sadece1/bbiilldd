@@ -1,0 +1,41 @@
+# VPS'te Hızlı Uploads Düzeltme Komutları
+
+# TEK KOMUT (Tümünü çalıştır):
+cd /var/www/campscape && git pull origin main && cd server && npm run build && pm2 restart campscape-backend && cd .. && sudo mkdir -p /var/www/campscape/server/uploads && sudo chown -R www-data:www-data /var/www/campscape/server/uploads && sudo chmod -R 755 /var/www/campscape/server/uploads && sudo cp nginx-campscape-ssl.config.conf /etc/nginx/sites-available/campscape && sudo nginx -t && sudo systemctl reload nginx
+
+# ADIM ADIM:
+
+# 1. Git pull
+cd /var/www/campscape
+git pull origin main
+
+# 2. Backend build ve restart
+cd server
+npm run build
+pm2 restart campscape-backend
+cd ..
+
+# 3. Backend'in çalıştığı dizini kontrol et
+pm2 info campscape-backend | grep "cwd"
+
+# 4. Uploads dizinini oluştur (hem backend CWD hem de server/uploads)
+BACKEND_CWD=$(pm2 info campscape-backend | grep "cwd" | awk '{print $2}')
+sudo mkdir -p "$BACKEND_CWD/uploads"
+sudo mkdir -p /var/www/campscape/server/uploads
+sudo chown -R www-data:www-data "$BACKEND_CWD/uploads"
+sudo chown -R www-data:www-data /var/www/campscape/server/uploads
+sudo chmod -R 755 "$BACKEND_CWD/uploads"
+sudo chmod -R 755 /var/www/campscape/server/uploads
+
+# 5. Nginx konfigürasyonunu güncelle
+sudo cp nginx-campscape-ssl.config.conf /etc/nginx/sites-available/campscape
+sudo nginx -t
+sudo systemctl reload nginx
+
+# 6. Test: Dosyaları kontrol et
+ls -la "$BACKEND_CWD/uploads" | head -10
+ls -la /var/www/campscape/server/uploads | head -10
+
+# 7. Nginx loglarını kontrol et (404 hataları için)
+sudo tail -f /var/log/nginx/campscape-error.log
+

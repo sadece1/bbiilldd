@@ -1,0 +1,15 @@
+# VPS'te Kategori Filtreleme Düzeltmesi - Tek Satırlık Komutlar
+# SSH ile VPS'e bağlanıp aşağıdaki komutları sırayla çalıştırın:
+
+# 1. Frontend dizinine git ve son değişiklikleri çek
+cd /var/www/campscape && git pull origin main
+
+# 2. Bağımlılıkları kontrol et (gerekirse)
+cd /var/www/campscape && npm install
+
+# 3. Frontend'i build et
+cd /var/www/campscape && npm run build
+
+# Tümünü tek seferde çalıştırmak için:
+cd /var/www/campscape && git pull origin main && npm install && npm run build
+

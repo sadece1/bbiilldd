@@ -80,3 +80,4 @@ fetch('/api/gear', {
 
 Bu hataları kopyalayıp paylaşın!
 
+

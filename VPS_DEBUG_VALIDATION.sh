@@ -101,3 +101,4 @@ echo "2. Check browser console for detailed error messages"
 echo "3. Run: pm2 logs campscape-backend --lines 500 | grep -i validation"
 echo ""
 
+

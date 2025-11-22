@@ -34,12 +34,16 @@ export const AdminCategoriesPage = () => {
     }
   }, [searchQuery, categories]);
 
-  const loadCategories = () => {
-    const allCategories = categoryManagementService.getAllCategories();
-    setCategories(allCategories);
-    
-    // Trigger navbar update
-    window.dispatchEvent(new Event('categoriesUpdated'));
+  const loadCategories = async () => {
+    try {
+      const allCategories = await categoryManagementService.getAllCategories();
+      setCategories(allCategories);
+      
+      // Trigger navbar update
+      window.dispatchEvent(new Event('categoriesUpdated'));
+    } catch (error) {
+      console.error('Failed to load categories:', error);
+    }
   };
 
   const toggleExpand = (id: string) => {

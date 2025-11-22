@@ -1,0 +1,33 @@
+# VPS'te Uploads Dizini Kontrol ve Düzeltme Komutları
+
+# 1. Backend'in çalıştığı dizini kontrol et
+pm2 info campscape-backend | grep "cwd"
+
+# 2. Uploads dizinini kontrol et
+ls -la /var/www/campscape/server/uploads/
+ls -la $(pm2 info campscape-backend | grep "cwd" | awk '{print $2}')/uploads/
+
+# 3. Backend .env dosyasını kontrol et
+cat /var/www/campscape/server/.env | grep UPLOAD_DIR
+
+# 4. Nginx konfigürasyonunu kontrol et
+sudo cat /etc/nginx/sites-available/campscape | grep -A 5 "/api/uploads"
+
+# 5. Uploads dizinini oluştur (yoksa)
+sudo mkdir -p /var/www/campscape/server/uploads
+sudo chown -R www-data:www-data /var/www/campscape/server/uploads
+sudo chmod -R 755 /var/www/campscape/server/uploads
+
+# 6. Nginx konfigürasyonunu güncelle
+cd /var/www/campscape
+git pull origin main
+sudo cp nginx-campscape-ssl.config.conf /etc/nginx/sites-available/campscape
+sudo nginx -t
+sudo systemctl reload nginx
+
+# 7. Backend'i yeniden başlat
+pm2 restart campscape-backend
+
+# 8. Test: Bir dosyanın var olup olmadığını kontrol et
+ls -la /var/www/campscape/server/uploads/ | grep "original-1763773329767"
+

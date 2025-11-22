@@ -192,9 +192,9 @@ export const Navbar = () => {
 
   // Load categories from categoryManagementService
   useEffect(() => {
-    const loadCategories = () => {
+    const loadCategories = async () => {
       try {
-        const allCategories = categoryManagementService.getAllCategories();
+        const allCategories = await categoryManagementService.getAllCategories();
         const rootCategories = allCategories
           .filter(cat => !cat.parentId)
           .sort((a, b) => (a.order || 0) - (b.order || 0));
@@ -215,23 +215,14 @@ export const Navbar = () => {
 
     loadCategories();
 
-    // Listen for storage changes to update categories when they're modified in admin panel
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'camp_categories_storage') {
-        loadCategories();
-      }
-    };
-
     // Listen for custom event when categories are updated (for same-tab updates)
     const handleCategoryUpdate = () => {
       loadCategories();
     };
 
-    window.addEventListener('storage', handleStorageChange);
     window.addEventListener('categoriesUpdated', handleCategoryUpdate);
 
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('categoriesUpdated', handleCategoryUpdate);
     };
   }, []);
@@ -245,9 +236,13 @@ export const Navbar = () => {
   // Search functionality
   useEffect(() => {
     if (debouncedSearch.length >= 2) {
-      const results = searchService.search(debouncedSearch);
-      setSearchResults(results);
-      setIsSearchOpen(true);
+      searchService.search(debouncedSearch).then(results => {
+        setSearchResults(results);
+        setIsSearchOpen(true);
+      }).catch(error => {
+        console.error('Search failed:', error);
+        setSearchResults({ blogs: [], gear: [] });
+      });
     } else {
       setSearchResults({ blogs: [], gear: [] });
       setIsSearchOpen(false);

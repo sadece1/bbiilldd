@@ -1,112 +1,51 @@
 import api from './api';
 import { Appointment, PaginatedResponse } from '@/types';
 
-const STORAGE_KEY = 'camp_appointments_storage';
-
-// Load from localStorage or use empty array
-const loadAppointmentsFromStorage = (): Appointment[] => {
-  try {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        return JSON.parse(stored);
-      }
-    }
-  } catch (error) {
-    console.error('Failed to load appointments from storage:', error);
-  }
-  return [];
-};
-
-// Save to localStorage
-const saveAppointmentsToStorage = (appointments: Appointment[]) => {
-  try {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(appointments));
-    }
-  } catch (error) {
-    console.error('Failed to save appointments to storage:', error);
-  }
-};
-
-// Mock appointments data - loaded from localStorage
-export let mockAppointments: Appointment[] = loadAppointmentsFromStorage();
+// REMOVED: All mock data and localStorage - now using backend API only
 
 export const appointmentService = {
   async getAppointments(page = 1, filters?: { status?: string }): Promise<PaginatedResponse<Appointment>> {
-    try {
-      const response = await api.get<PaginatedResponse<Appointment>>('/appointments', {
-        params: { page, ...filters },
-      });
-      return response.data;
-    } catch (error) {
-      // Fallback to mock data
-      mockAppointments = loadAppointmentsFromStorage();
-      let filtered = [...mockAppointments];
-      
-      if (filters?.status) {
-        filtered = filtered.filter((a) => a.status === filters.status);
-      }
-
+    const response = await api.get<PaginatedResponse<Appointment>>('/appointments', {
+      params: { page, ...filters },
+    });
+    
+    // Backend returns { success: true, data: [...], pagination: {...} }
+    if ((response.data as any).success && (response.data as any).data) {
       return {
-        data: filtered,
-        total: filtered.length,
-        page,
-        limit: 20,
-        totalPages: Math.ceil(filtered.length / 20),
+        data: (response.data as any).data,
+        total: (response.data as any).pagination?.total || (response.data as any).data.length,
+        page: (response.data as any).pagination?.page || page,
+        limit: (response.data as any).pagination?.limit || 20,
+        totalPages: (response.data as any).pagination?.totalPages || Math.ceil(((response.data as any).pagination?.total || (response.data as any).data.length) / 20),
       };
     }
+    
+    return response.data;
   },
 
   async getAppointmentById(id: string): Promise<Appointment> {
-    try {
-      const response = await api.get<Appointment>(`/appointments/${id}`);
-      return response.data;
-    } catch (error) {
-      const appointment = mockAppointments.find((a) => a.id === id);
-      if (!appointment) throw new Error('Randevu bulunamadı');
-      return appointment;
+    const response = await api.get<{ success: boolean; data: Appointment } | Appointment>(`/appointments/${id}`);
+    
+    // Backend returns { success: true, data: appointment }
+    if ((response.data as any).success && (response.data as any).data) {
+      return (response.data as any).data;
     }
+    
+    return response.data as Appointment;
   },
 
   async updateAppointmentStatus(id: string, status: Appointment['status']): Promise<Appointment> {
-    try {
-      const response = await api.patch<Appointment>(`/appointments/${id}/status`, { status });
-      const updated = response.data;
-      mockAppointments = loadAppointmentsFromStorage();
-      const index = mockAppointments.findIndex((a) => a.id === id);
-      if (index !== -1) {
-        mockAppointments[index] = updated;
-        saveAppointmentsToStorage(mockAppointments);
-      }
-      return updated;
-    } catch (error) {
-      mockAppointments = loadAppointmentsFromStorage();
-      const index = mockAppointments.findIndex((a) => a.id === id);
-      if (index === -1) throw new Error('Randevu bulunamadı');
-      
-      mockAppointments[index] = {
-        ...mockAppointments[index],
-        status,
-        updatedAt: new Date().toISOString(),
-      };
-      saveAppointmentsToStorage(mockAppointments);
-      return mockAppointments[index];
+    const response = await api.patch<{ success: boolean; data: Appointment } | Appointment>(`/appointments/${id}/status`, { status });
+    
+    // Backend returns { success: true, data: appointment }
+    if ((response.data as any).success && (response.data as any).data) {
+      return (response.data as any).data;
     }
+    
+    return response.data as Appointment;
   },
 
   async deleteAppointment(id: string): Promise<void> {
-    try {
-      await api.delete(`/appointments/${id}`);
-    } catch (error) {
-      // Continue with mock deletion
-    }
-    mockAppointments = loadAppointmentsFromStorage();
-    const index = mockAppointments.findIndex((a) => a.id === id);
-    if (index !== -1) {
-      mockAppointments.splice(index, 1);
-      saveAppointmentsToStorage(mockAppointments);
-    }
+    await api.delete(`/appointments/${id}`);
   },
 };
-

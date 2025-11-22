@@ -36,7 +36,6 @@ export const useBlogStore = create<BlogState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const activeFilters = filters || get().filters;
-      // blogService.getBlogs will use mock data if API fails, so we don't need extra error handling
       const response = await blogService.getBlogs(activeFilters, page);
       console.log('BlogService response:', response);
       const blogsData = response?.data || [];
@@ -50,27 +49,11 @@ export const useBlogStore = create<BlogState>((set, get) => ({
       });
     } catch (error) {
       console.error('Error fetching blogs:', error);
-      // Try to get mock data directly
-      try {
-        const { blogService } = await import('@/services/blogService');
-        const mockResponse = await blogService.getBlogs(filters, page);
-        const blogsData = mockResponse?.data || [];
-        console.log('Got mock data after error:', blogsData.length);
-        set({
-          blogs: blogsData,
-          total: mockResponse?.total || blogsData.length,
-          page: mockResponse?.page || page,
-          isLoading: false,
-          error: null,
-        });
-      } catch (mockError) {
-        console.error('Error getting mock data:', mockError);
-        set({
-          blogs: [],
-          isLoading: false,
-          error: error instanceof Error ? error.message : 'Bloglar yüklenemedi',
-        });
-      }
+      set({
+        blogs: [],
+        isLoading: false,
+        error: error instanceof Error ? error.message : 'Bloglar yüklenemedi',
+      });
     }
   },
 
