@@ -331,11 +331,18 @@ export const CategoryPage = () => {
         
             // Call async function
             await filterGearWithBackendCategories();
-      } else if (!gearLoading) {
-        // If gear is empty and not loading, try fetching again
-        console.log('Gear is empty, fetching...');
-        fetchGear({}, 1, 500);
-      }
+          } else if (!gearLoading) {
+            // If gear is empty and not loading, try fetching again
+            console.log('Gear is empty, fetching...');
+            fetchGear({}, 1, 500);
+          }
+        } catch (error) {
+          console.error('Failed to filter gear:', error);
+          setIsLoading(false);
+        }
+      };
+      
+      filterGear();
     }
   }, [categorySlug, gear, gearLoading, fetchGear]);
 
