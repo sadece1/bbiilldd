@@ -68,100 +68,21 @@ export const create = asyncHandler(async (req: AuthRequest, res: Response) => {
     return;
   }
 
-  // Parse FormData fields - extract image URLs from image_0, image_1, etc.
-  const images: string[] = [];
-  let imageIndex = 0;
-  while (req.body[`image_${imageIndex}`]) {
-    const imageUrl = req.body[`image_${imageIndex}`];
-    if (imageUrl && typeof imageUrl === 'string' && imageUrl.trim() !== '') {
-      images.push(imageUrl.trim());
-    }
-    imageIndex++;
-  }
-
-  // Parse specifications if it's a string (JSON)
-  let specifications = req.body.specifications;
-  if (typeof specifications === 'string') {
-    try {
-      specifications = JSON.parse(specifications);
-    } catch (e) {
-      specifications = {};
-    }
-  }
-
-  // Parse recommended_products if it's a string (JSON)
-  let recommended_products = req.body.recommendedProducts || req.body.recommended_products;
-  if (typeof recommended_products === 'string') {
-    try {
-      recommended_products = JSON.parse(recommended_products);
-    } catch (e) {
-      recommended_products = [];
-    }
-  }
-
-  // Parse numeric fields
-  const price_per_day = req.body.price_per_day 
-    ? (typeof req.body.price_per_day === 'string' ? parseFloat(req.body.price_per_day) : req.body.price_per_day)
-    : null;
-  const deposit = req.body.deposit 
-    ? (typeof req.body.deposit === 'string' ? parseFloat(req.body.deposit) : req.body.deposit)
-    : null;
-
-  // Validate required fields (validation middleware should catch this, but double-check)
-  if (!req.body.name || String(req.body.name).trim() === '') {
-    res.status(400).json({
-      success: false,
-      message: 'Gear name is required',
-    });
-    return;
-  }
-
-  if (!req.body.description || String(req.body.description).trim() === '') {
-    res.status(400).json({
-      success: false,
-      message: 'Description is required',
-    });
-    return;
-  }
-
-  if (!req.body.category_id) {
-    res.status(400).json({
-      success: false,
-      message: 'Category ID is required',
-    });
-    return;
-  }
-
-  if (!price_per_day || price_per_day <= 0) {
-    res.status(400).json({
-      success: false,
-      message: 'Price per day must be a positive number',
-    });
-    return;
-  }
-
-  if (!req.body.status) {
-    res.status(400).json({
-      success: false,
-      message: 'Status is required',
-    });
-    return;
-  }
-
-  // Build gear data object - ensure required fields are not null
+  // req.body is already transformed by transformFormData middleware and validated by validate middleware
+  // Just use it directly
   const gearData: any = {
-    name: String(req.body.name).trim(),
-    description: String(req.body.description).trim(),
+    name: req.body.name,
+    description: req.body.description,
     category_id: req.body.category_id,
-    images: images.length > 0 ? images : (req.body.images || []),
-    price_per_day: price_per_day,
-    deposit: deposit !== null && deposit !== undefined ? deposit : undefined,
-    available: req.body.available !== undefined ? (req.body.available === 'true' || req.body.available === true) : true,
+    images: req.body.images || [],
+    price_per_day: req.body.price_per_day,
+    deposit: req.body.deposit,
+    available: req.body.available !== undefined ? req.body.available : true,
     status: req.body.status,
-    specifications: specifications || {},
-    brand: req.body.brand ? String(req.body.brand).trim() : undefined,
-    color: req.body.color ? String(req.body.color).trim() : undefined,
-    recommended_products: recommended_products || [],
+    specifications: req.body.specifications || {},
+    brand: req.body.brand,
+    color: req.body.color,
+    recommended_products: req.body.recommended_products || [],
   };
 
   const gear = await createGear(gearData, req.user.id);
